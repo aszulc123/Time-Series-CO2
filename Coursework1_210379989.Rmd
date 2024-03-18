@@ -1,0 +1,163 @@
+---
+title: "Time Series of CO2 Levels"
+subtitle: "Working With Prophet to Model Changes in CO2"
+author: "Anna Szulc"
+
+date: "March 2024"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### The purpose of this project
+
+The purpose of this project is to explore CO2 data using the prophet forecasting system by Meta in R. It's aimed to provide practical experience with using and analysing time series to enhance CV's. This project is created to expand our skill profile and strengthen our professional portfolio for future employability and CV's by enhancing our skills in data analytics and R programming.
+
+### What is CO2
+
+In this project CO2 refers to the atmospheric concentrations of CO2 expressed in parts per million (ppm). It is a time series of 468 observations collected monthly from 1959 to 1997. This was reported in the preliminary 1997 SOI manometric mole fraction scale.
+
+To run all the following functions fromt he prophet library I fist had to insatll 'install.packages("prophet")' and from this install 'install.packages("remotes")' and 'remotes::install_github('facebook/prophet\@\*release', subdir='R')'. Only then was I able to run 'library(prophet)'.
+
+
+### Plotting time series
+
+Using the 'make_future_dataframe' and 'predict' functions I will produce a plot of the Time series of recorded and predicted levels of CO2 levels.
+
+```{r}
+library(prophet)
+co2.df = data.frame(
+  ds=zoo::as.yearmon(time(co2)), 
+  y=co2)
+m = prophet::prophet(co2.df)
+f = prophet::make_future_dataframe(m, periods=8, freq="quarter")
+p = predict(m, f)
+plot(m,p)
+```
+
+
+From looking at this graph i can tell that CO2 levels have been constantly increasing from 1959 to 1997 with some small fluctuations within the years.
+
+
+### Plotting Trend and Seasonality
+
+To take a closer look at these fluctuations I will use the 'prophet_plot_components' function to deconstruct this graph into trend and seasonality.
+
+```{r}
+prophet_plot_components(m,p)
+```
+
+
+The trend graph above confirms my previous assumption that the CO2 levels have been increasing over the time of the data collection study. The seasonality graph shows that the highest increase of CO2 levels occurs between September and April, with peaks in April. Smaller levels of CO2 produced between May and August. This might suggest that plants and wildlife play a key role in seasonal fluctuations but there might be other factors that are affecting the overall increase over the years.
+
+
+### Linear Regression Model
+
+I will run a linear regression model to undersatnd the time series a bit more.
+
+```{r}
+lin_model = lm(y~ds, data=co2.df)
+summary(lin_model)
+```
+
+
+This data is telling me that for each increase in time, CO2 levels increase by 1.308e+00 ppm.This data shows that the linear regression model fits the actual CO2 data well.
+
+
+### Histogram
+
+Histogram of CO2 data:
+
+```{r}
+hist(co2.df$y, main="histogram of co2 data", ylab="frequency", xlab="co2values")
+```
+
+
+From this Histogram we can see that the most common CO2 levels were between 320 to 325 ppm and the least common levels of CO2 levels recorded were between 365 to 370 ppm.the difference between the different bar classes, apart from the 310-315 and 365-370 classes, shows that the CO2 increase in CO2 levels was gradual but is speeding up over time as the frequency between classes decreases.
+
+
+### Boxplot
+
+Boxplot of CO2 data:
+
+```{r}
+boxplot(co2.df$y, main="boxplot of co2 data", ylab="co2 values")
+
+```
+
+
+From the boxplot we can see that the upper tail is slightly longer than the lower tail. This also supports my claim that CO2 particles are increasing faster the median is slightly skewed down in the box also supporting this.
+
+
+### Looking at numbers of interest
+
+Lets summarise the co2 data frame to understand it better.
+
+```{r}
+summary(co2.df)
+```
+
+
+This shows the numerical data of the boxplot above. We can see that the difference between quartile 3 and maximum is 16.5 while the difference between the minimum and quartile 1 is 10.3 further supporting my claim that CO2 levels are not only increasing but increasing faster.
+
+
+Lets summarise the prediction data to see what it is telling us.
+
+```{r}
+summary(p)
+```
+
+
+This summary shows the data for the trend, seasonality and predicted values. It shows how many factors the 'Predict' function considers to provide an accurate forecasting. We can see the statistics of each component above.
+
+
+Lets look at the fist 6 and last 6 values of the predicted data.
+
+```{r}
+head(p)
+```
+
+```{r}
+tail(p)
+```
+
+
+From all the above data summarised we can see the first 6 and last 6 pieces of data.
+
+
+Lets look at the last 6 values of the future dataframe.
+
+```{r}
+tail(f)
+```
+
+
+This is showing the last 6 dates of data predicted.
+
+
+Lets summarise the Prophet model.
+
+```{r}
+summary(m)
+```
+
+
+This summary shows how the prophet function works and the different factors it considers an detects.
+
+
+
+### Conclution
+Starting this project and seeing the time series plot, it seemed to me that CO2 particle levels were increasing linearly but after considering the Boxplot and Histogram its seems more likely to me that the levels are increasing exponentially. Looking at the seasonality graph shows us that there are multiple factors that affect CO2 levels throughout the year as well.  
+
+
+
+<br>
+
+<hr>
+
+<br>
